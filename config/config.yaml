@@ -1,0 +1,133 @@
+# UFC Quant — configuration centrale.
+# Tous les chemins sont relatifs à la racine du dépôt.
+
+project:
+  model_version: "0.1.0"
+  random_seed: 42
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  artifacts_dir: artifacts
+  reports_dir: reports/generated
+  # Sorties du mode démonstration synthétique : toujours séparées des données réelles.
+  synthetic_root: data/synthetic
+
+sources:
+  ufcstats:
+    # ufcstats.com n'était pas joignable depuis l'environnement de développement (proxy 403).
+    # On utilise un miroir public des mêmes données, produit par un scraper de ufcstats.com
+    # (dépôt GitHub Greco1899/scrape_ufc_stats, code GPL-3.0). Les CSV ne sont pas redistribués
+    # dans ce dépôt : ils sont téléchargés localement dans data/raw (gitignoré).
+    mirror_base_url: "https://raw.githubusercontent.com/Greco1899/scrape_ufc_stats/main"
+    files:
+      - ufc_event_details.csv
+      - ufc_fight_details.csv
+      - ufc_fight_results.csv
+      - ufc_fight_stats.csv
+      - ufc_fighter_details.csv
+      - ufc_fighter_tott.csv
+    # Alternative : dossier local contenant des CSV au même schéma (ex. scraper lancé soi-même).
+    local_dir: null
+  odds:
+    # Cotes historiques publiques. Bookmaker et heure de relevé NON documentés par la source :
+    # précision temporelle = « inconnue, au plus tard le jour du combat » (voir README).
+    ultimate_ufc_dataset:
+      url: "https://raw.githubusercontent.com/shortlikeafox/ultimate_ufc_dataset/master/ufc-master.csv"
+      bookmaker_label: "ultimate_ufc_dataset_consensus"
+      enabled: true
+    betmma_tips:
+      url: "https://raw.githubusercontent.com/jansen88/ufc-data/master/data/complete_ufc_data.csv"
+      bookmaker_label: "betmma_tips"
+      enabled: true
+    # Fichiers CSV au format standard (docs/odds_import_format.md), facultatifs.
+    csv_imports: []
+    the_odds_api:
+      base_url: "https://api.the-odds-api.com/v4"
+      sport_key: "mma_mixed_martial_arts"
+      regions: "eu"
+      markets: "h2h"
+
+http:
+  min_interval_seconds: 2.0   # délai minimal entre deux requêtes vers un même hôte
+  max_retries: 3
+  backoff_seconds: 4.0
+  timeout_seconds: 60
+  user_agent: "ufc-quant-academic/0.1 (non-commercial research)"
+
+reconciliation:
+  # Tolérance de date pour rapprocher un combat entre sources (fuseaux horaires, événements tardifs).
+  date_tolerance_days: 1
+
+features:
+  # Priors de rétrécissement (shrinkage) : moyennes de population calculées uniquement
+  # sur les combats antérieurs à la date considérée, avec les pseudo-volumes ci-dessous.
+  shrink_minutes: 15.0        # pseudo-minutes pour les taux par minute
+  shrink_attempts: 20.0       # pseudo-tentatives pour les précisions (frappes, takedowns)
+  recent_form_window: 3
+  elo:
+    initial_rating: 1500.0
+    k_factor: 32.0            # valeur par défaut ; le pipeline choisit K sur la validation (`k_grid`)
+    # Grille élargie après une première exécution où l'optimum de validation était au bord (64).
+    k_grid: [16, 32, 48, 64, 96, 128, 160]
+    draw_score: 0.5           # nul = 0.5 ; no contest = aucune mise à jour
+
+splits:
+  # Premier combat utilisé pour l'entraînement (l'historique antérieur alimente Elo et les features).
+  train_start: "2005-01-01"
+  # Validation walk-forward : chaque année est prédite par un modèle entraîné sur les années antérieures.
+  walk_forward_years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+  # Test final intact : jamais utilisé pour choisir un modèle, calibrer ou régler les mises.
+  test_start: "2025-01-01"
+
+models:
+  logistic:
+    # Grille élargie vers le bas après une première exécution où l'optimum de validation était au bord.
+    C_grid: [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0]
+  gbm:
+    # sklearn HistGradientBoostingClassifier (gère nativement les NaN).
+    param_grid:
+      - {learning_rate: 0.05, max_depth: 3, max_iter: 200, min_samples_leaf: 50, l2_regularization: 1.0}
+      - {learning_rate: 0.03, max_depth: 3, max_iter: 400, min_samples_leaf: 100, l2_regularization: 1.0}
+      - {learning_rate: 0.05, max_depth: 2, max_iter: 300, min_samples_leaf: 100, l2_regularization: 0.0}
+  calibration:
+    # Mise à l'échelle de température (préserve la symétrie A/B), ajustée sur les
+    # prédictions hors-échantillon des années de validation uniquement.
+    enabled: true
+
+odds:
+  reference_bookmaker: "ultimate_ufc_dataset_consensus"
+  # Instant de décision : N heures avant le début du combat. N'a d'effet que si les
+  # horodatages sont connus. Les cotes datées au jour seul sont acceptées seulement si
+  # `accept_date_only_snapshots` est vrai, et le rapport le signale.
+  decision_hours_before_commence: 2.0
+  accept_date_only_snapshots: true
+
+backtest:
+  initial_bankroll: 1000.0
+  ev_threshold: 0.03          # rendement espéré minimal p*o-1 pour parier
+  max_stake_fraction: 0.01    # 1 % du capital par combat
+  max_event_exposure: 0.05    # 5 % du capital par événement
+  strategies:
+    flat: {units: 10.0}
+    fixed_fraction: {fraction: 0.005}
+    quarter_kelly: {kelly_multiplier: 0.25}
+  # Règlement : no contest -> remboursement ; nul -> paramétrable (remboursement ou perte).
+  settlement:
+    no_contest: refund
+    draw: refund
+  sensitivity:
+    ev_thresholds: [0.0, 0.02, 0.03, 0.05, 0.10]
+    odds_haircuts: [0.0, 0.02, 0.05]   # dégradation du gain net : (o-1)*(1-h)
+  bootstrap:
+    n_resamples: 2000
+
+# Démonstration SYNTHÉTIQUE (python -m ufc_quant all --synthetic). Aucune donnée réelle.
+synthetic:
+  seed: 7
+  n_fighters: 600
+  start_date: "2008-01-05"
+  end_date: "2026-06-27"
+  days_between_events: 14
+  fights_per_event: 8
+  reference_bookmaker: "SYNTHETIC_BOOK"

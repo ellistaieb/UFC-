@@ -1,0 +1,12 @@
+# Versions testées (Python 3.11). Installation : pip install -r requirements.txt
+numpy==2.4.6
+pandas==3.0.6
+scikit-learn==1.9.1
+scipy==1.17.1
+pyarrow==25.0.1
+PyYAML==6.0.1
+requests==2.33.1
+python-dotenv==1.2.3
+streamlit==1.64.0
+plotly==7.1.0
+pytest==9.1.1
