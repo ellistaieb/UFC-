@@ -331,6 +331,13 @@ with tabs[3]:
         if b.get("n_bets"):
             st.markdown(f"ROI des paris à 1 unité : **{b['roi_unit']:+.2%}**, IC 95 % (bootstrap par événement) "
                         f"[{b['ci_low']:+.2%} ; {b['ci_high']:+.2%}] sur {b['n_bets']} paris / {b['n_events']} événements.")
+        by_year = pd.DataFrame(r["strategies"]["flat"].get("by_year", []))
+        if len(by_year):
+            st.markdown("**Résultats par année (mise fixe)**")
+            st.dataframe(by_year.rename(columns={"period": "année", "n_bets": "paris", "staked": "misé",
+                                                 "profit": "profit net", "roi": "ROI"})
+                         .style.format({"misé": "{:.1f}", "profit net": "{:+.1f}", "ROI": "{:+.2%}"}),
+                         hide_index=True, width="stretch")
         tag = variant
         fig = go.Figure()
         fig2 = go.Figure()

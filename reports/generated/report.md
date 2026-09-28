@@ -1,6 +1,6 @@
 # UFC Quant — rapport généré automatiquement
 
-- Généré le : 2026-09-28T11:30:11+00:00
+- Généré le : 2026-09-28T17:59:48+00:00
 - Version du modèle : 0.1.0 — entraîné le 2026-09-28T11:29:02+00:00
 - Données : 1994-03-11 → 2026-09-26 (réelles)
 - Tous les chiffres ci-dessous proviennent des fichiers `artifacts/` produits par le pipeline.
@@ -119,6 +119,32 @@ Cohérence entre sources de cotes : {'betmma_tips vs ultimate_ufc_dataset_consen
 - test : ROI des paris à 1 unité -10.78 %, IC 95 % bootstrap par événement [-21.42 % ; 0.76 %], P(ROI ≤ 0) ≈ 0.965 (531 paris, 51 événements).
   - variante « nul = perte » (mise fixe) : ROI -10.77 %.
 
+Résultats par année (mise fixe) :
+
+| Segment | Année | Paris | Misé | Profit net | ROI |
+|---|---|---|---|---|---|
+| validation | 2016 | 389 | 2103.3 | 3.6 | 0.17 % |
+| validation | 2017 | 360 | 1963.9 | 77.3 | 3.93 % |
+| validation | 2018 | 362 | 1955.2 | -247.2 | -12.64 % |
+| validation | 2019 | 380 | 1551.4 | -199.0 | -12.83 % |
+| validation | 2020 | 331 | 1357.5 | 34.3 | 2.53 % |
+| validation | 2021 | 383 | 1415.1 | -74.8 | -5.29 % |
+| validation | 2022 | 404 | 1095.0 | -119.7 | -10.93 % |
+| validation | 2023 | 343 | 788.2 | -138.0 | -17.50 % |
+| validation | 2024 | 311 | 617.4 | -61.0 | -9.87 % |
+| test | 2025 | 431 | 2062.1 | -107.6 | -5.22 % |
+| test | 2026 | 100 | 378.9 | -135.1 | -35.64 % |
+
+Sensibilité du ROI sur le test (mise fixe ; descriptive, aucun paramètre choisi ainsi) :
+
+| Seuil de rendement espéré | dégradation 0% | dégradation 2% | dégradation 5% |
+|---|---|---|---|
+| 0% | -9.86 % | -11.27 % | -12.19 % |
+| 2% | -10.28 % | -10.87 % | -12.70 % |
+| 3% | -9.94 % | -11.32 % | -12.04 % |
+| 5% | -9.28 % | -9.93 % | -13.62 % |
+| 10% | -11.21 % | -12.93 % | -17.76 % |
+
 ### Mélange marché + modèle — analyse secondaire
 
 > Analyse ajoutée **après** avoir observé les résultats de l'analyse principale sur le test : même si ses coefficients sont estimés uniquement sur des périodes antérieures, ses résultats de test ne constituent pas une évaluation pré-enregistrée.
@@ -136,6 +162,31 @@ Cohérence entre sources de cotes : {'betmma_tips vs ultimate_ufc_dataset_consen
   - variante « nul = perte » (mise fixe) : ROI 1.99 %.
 - test : ROI des paris à 1 unité 8.21 %, IC 95 % bootstrap par événement [-5.37 % ; 21.71 %], P(ROI ≤ 0) ≈ 0.123 (79 paris, 39 événements).
   - variante « nul = perte » (mise fixe) : ROI 8.19 %.
+
+Résultats par année (mise fixe) :
+
+| Segment | Année | Paris | Misé | Profit net | ROI |
+|---|---|---|---|---|---|
+| validation | 2017 | 186 | 1734.9 | 275.1 | 15.86 % |
+| validation | 2018 | 203 | 1923.6 | -138.4 | -7.19 % |
+| validation | 2019 | 167 | 1542.1 | -133.2 | -8.64 % |
+| validation | 2020 | 53 | 528.5 | 81.0 | 15.33 % |
+| validation | 2021 | 124 | 1235.7 | -20.7 | -1.68 % |
+| validation | 2022 | 90 | 876.1 | -22.1 | -2.52 % |
+| validation | 2023 | 55 | 550.0 | 36.1 | 6.57 % |
+| validation | 2024 | 37 | 370.0 | 96.3 | 26.01 % |
+| test | 2025 | 65 | 647.9 | 49.4 | 7.62 % |
+| test | 2026 | 14 | 140.0 | 15.2 | 10.84 % |
+
+Sensibilité du ROI sur le test (mise fixe ; descriptive, aucun paramètre choisi ainsi) :
+
+| Seuil de rendement espéré | dégradation 0% | dégradation 2% | dégradation 5% |
+|---|---|---|---|
+| 0% | 4.31 % | 2.63 % | 0.02 % |
+| 2% | 3.11 % | 7.01 % | 8.66 % |
+| 3% | 8.19 % | 16.58 % | 8.36 % |
+| 5% | 4.71 % | 12.69 % | 17.57 % |
+| 10% | 26.46 % | 66.71 % | 63.65 % |
 
 Coefficients du mélange (β_marché, β_modèle) par période : {'2017': {'beta_market': 0.9007600187627588, 'beta_model': 0.403769311623968}, '2018': {'beta_market': 0.8668160092390917, 'beta_model': 0.5564783812447656}, '2019': {'beta_market': 0.9920295398840817, 'beta_model': 0.37389860460374175}, '2020': {'beta_market': 1.017254254453376, 'beta_model': 0.2480708038289291}, '2021': {'beta_market': 0.9888441671324958, 'beta_model': 0.32813262357045925}, '2022': {'beta_market': 1.0106693247594647, 'beta_model': 0.26976899627050355}, '2023': {'beta_market': 1.0326229622043657, 'beta_model': 0.24915956258162675}, '2024': {'beta_market': 1.064853209440694, 'beta_model': 0.2312742759131534}, 'test': {'beta_market': 1.0699021282927272, 'beta_model': 0.22506239993033453}}
 

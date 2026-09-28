@@ -13,7 +13,7 @@ par rapport au marché sur les mêmes combats, (3) la performance financière si
 
 ## Résultats (exécution du 28/09/2026, données réelles)
 
-Chiffres recopiés du rapport généré automatiquement, [`reports/generated/report.md`](reports/generated/report.md),
+Chiffres recopiés du rapport généré automatiquement (résultats par année et sensibilité inclus), [`reports/generated/report.md`](reports/generated/report.md),
 qui fait foi. Test final intact : combats du 11/01/2025 au 26/09/2026.
 
 | | Validation 2016–2024 | Test 2025–2026 |
@@ -61,7 +61,7 @@ cp .env.example .env                                # facultatif : clé The Odds
 | Simulation | `python -m ufc_quant backtest` | 3 stratégies, sensibilité, bootstrap |
 | Rapport | `python -m ufc_quant report` | `reports/generated/report.md` |
 | Démo synthétique | `python -m ufc_quant all --synthetic` | tout le pipeline sur données **SYNTHÉTIQUES** (`data/synthetic/`) |
-| Tests | `python -m pytest -q` | 28 tests |
+| Tests | `python -m pytest -q` | 28 tests, aussi exécutés par GitHub Actions à chaque push |
 | Dashboard | `streamlit run app/streamlit_app.py` | interface (données réelles / démo synthétique) |
 
 Un `Makefile` fournit les mêmes raccourcis (`make all`, `make demo`, `make test`, `make dashboard`).

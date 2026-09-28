@@ -171,6 +171,29 @@ def write_report(cfg: dict, paths: Paths) -> Path:
                 if "flat_draw_as_loss" in r:
                     L.append(f"  - variante « nul = perte » (mise fixe) : ROI {_pct(r['flat_draw_as_loss']['roi'], 2)}.")
             L.append("")
+            # results by year, fixed-stake strategy
+            yrows = []
+            for split in ("validation", "test"):
+                flat = bt[var].get(split, {}).get("strategies", {}).get("flat", {})
+                for y in flat.get("by_year", []):
+                    yrows.append([split, y["period"], y["n_bets"], _f(float(y["staked"]), 1),
+                                  _f(float(y["profit"]), 1), _pct(float(y["roi"]), 2)])
+            if yrows:
+                L.append("Résultats par année (mise fixe) :\n")
+                L.append(_table(yrows, ["Segment", "Année", "Paris", "Misé", "Profit net", "ROI"]))
+                L.append("")
+            # sensitivity on the test period, fixed stake
+            sp = art / "backtest" / f"sensitivity_{var}_test.parquet"
+            if sp.exists():
+                sens = pd.read_parquet(sp)
+                sens = sens[sens["strategy"] == "flat"]
+                if len(sens):
+                    piv = sens.pivot(index="ev_threshold", columns="odds_haircut", values="roi")
+                    header = ["Seuil de rendement espéré"] + [f"dégradation {h:.0%}" for h in piv.columns]
+                    rows = [[f"{t:.0%}"] + [_pct(v, 2) for v in piv.loc[t]] for t in piv.index]
+                    L.append("Sensibilité du ROI sur le test (mise fixe ; descriptive, aucun paramètre choisi ainsi) :\n")
+                    L.append(_table(rows, header))
+                    L.append("")
         if "blend_coefficients" in bt:
             L.append(f"Coefficients du mélange (β_marché, β_modèle) par période : {bt['blend_coefficients']}\n")
         L.append("Les analyses de sensibilité (seuil × dégradation des cotes) sont dans "
